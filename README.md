@@ -8,8 +8,9 @@ If you are looking for the very basics on how to work with SQL, e.g. what a `SEL
 
 
 # Table of Contents
-1. [Installation Guide](#installation-guide)
-2. [Introduction to SQL](#introduction-to-sql)
+1. [Data types & constraints](#data-types--constraints)
+2. [Filtering data](#filtering-data)
+3. [Creating & manipulating tables](#creating-and-manipulating-tables)
 
 # Data types & constraints
 ## Data types
