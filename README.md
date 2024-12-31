@@ -1,16 +1,21 @@
 # SQL-notebook
-> *The notes in this notebook, as well a exercises were done using https://sqliteonline.com/, a web-based and free SQL compiler/RDBMS. SQLite does not require installation! You can access the compiler by visiting the official website at [https://www.sqlite.org/download.html](https://www.sqlite.org/download.html) and importing the databases you want to work on.
+> *The notes in this notebook, as well a exercises were done using https://sqliteonline.com/, a web-based and free SQL compiler/RDBMS. SQLite does not require installation! You can access the compiler by visiting the official website at [https://www.sqlite.org/download.html](https://www.sqlite.org/download.html) and importing the databases you want to work on. **SQLite docs:** https://www.sqlite.org/docs.html
 
-I would also like to credit the repository [SQL-101](https://github.com/biancainocencio/SQL-101/tree/main), from where I drew inspiration on the markdown code and notebook organization, as well as overall tips. 
+I would also like to credit the repository [SQL-101](https://github.com/biancainocencio/SQL-101/tree/main), from where I drew inspiration on the markdown code and notebook organization. 
 
 ## SQL Basics
 If you are looking for the very basics on how to work with SQL, e.g. what a `SELECT` is, I suggest you visit the [SQL-101](https://github.com/biancainocencio/SQL-101/tree/main) repo, or check the other files in this repository. I've uploaded my personal notes on the simplest SQL commands.
 
 
 # Table of Contents
-1. [Data types & constraints](#data-types--constraints)
-2. [Filtering data](#filtering-data)
-3. [Creating & manipulating tables](#creating-and-manipulating-tables)
+1. [Resources](#cool-resources)
+2. [Data types & constraints](#data-types--constraints)
+3. [Filtering data](#filtering-data)
+4. [Creating & manipulating tables](#creating-and-manipulating-tables)
+
+# Cool resources
+
+SQL Murder Mistery > https://mystery.knightlab.com/walkthrough.html
 
 # Data types & constraints
 ## Data types
@@ -253,8 +258,8 @@ WHERE supplier_country = 'USA';
 ```
 
 # Functions
-## Aggregating functions
-There are multiple specific functions / SQL commands that are specifically focused on numbers. If you're familiar with Excel, first I'm sorry!, second there will be no surprises here. 
+## Aggregate functions
+There are multiple specific functions / SQL commands that are specifically focused on numbers. If you're familiar with Excel, first I'm sorry you had to learn it!, second there will be no surprises here. 
 
 * **MAX** -> Highest value in a column.
 * **MIN** -> Lowest value in a column.
@@ -269,5 +274,187 @@ SELECT
 FROM sales
 WHERE year LIKE '199%';
 ```
-
 Here, I'm retrieving all sales that happened in the 90s and summing it all.
+
+* **AVG** -> Takes the average of the values in a column. Same syntax as the others.
+* **COUNT** -> Count is a very flexible and interesting function.
+    * If you want to count all values/records in a column, you'll use `COUNT(column_name)`. It'll count the number of lines that satisfy your filters.
+   
+   
+* **GROUP BY** -> With this function, you're collapsing the data and aggregating it by one of the columns. It's useful when you know multiple lines have the same tag.
+* **HAVING** -> Having is a very important command. When we use these aggregation functions, such as `GROUP BY` we can't really use `WHERE`. In this case, we use `HAVING`.
+
+```sql
+SELECT institution, COUNT(courses) AS 'Number of courses'
+FROM training_table
+GROUP BY institution
+HAVING COUNT(courses) > 2
+ORDER BY COUNT(courses) DESC;
+```
+With the query above, we are selecting all institutions that offered more than two courses.
+
+### Formatting numbers
+To format the results of these aggregate functions (say, limit the number of decimals), you can use the following functions.
+
+1. **ROUND()**
+   - **Description**: Rounds a number to the specified number of decimal places.
+   - **Syntax**: 
+     ```sql
+     ROUND(number, decimals)
+     ```
+   - **Example**:
+     ```sql
+     SELECT ROUND(123.456, 2) AS RoundedNumber;
+     -- Result: 123.46
+     ```
+
+ 2. **FORMAT()**
+   - **Description**: Formats a number with a specific pattern or locale. Commonly used in MySQL and SQL Server.
+   - **Syntax**:
+     ```sql
+     FORMAT(number, format, locale)
+     ```
+   - **Example**:
+     ```sql
+     SELECT FORMAT(123456.789, 'N2') AS FormattedNumber;
+     -- Result: 123,456.79 (varies based on locale)
+     ```
+
+3. **TRUNC()**
+   - **Description**: Truncates a number to a specified number of decimal places without rounding.
+   - **Syntax**:
+     ```sql
+     TRUNC(number, decimals)
+     ```
+   - **Example**:
+     ```sql
+     SELECT TRUNC(123.456, 2) AS TruncatedNumber;
+     -- Result: 123.45
+     ```
+
+4. **CAST()**
+   - **Description**: Converts a number to a specific data type, such as `VARCHAR`, for formatting purposes.
+   - **Syntax**:
+     ```sql
+     CAST(expression AS data_type)
+     ```
+   - **Example**:
+     ```sql
+     SELECT CAST(123.456 AS VARCHAR) AS FormattedString;
+     -- Result: '123.456'
+     ```
+
+5. **CONVERT()**
+   - **Description**: Similar to `CAST()` but allows additional style parameters in SQL Server.
+   - **Syntax**:
+     ```sql
+     CONVERT(data_type, expression, style)
+     ```
+   - **Example**:
+     ```sql
+     SELECT CONVERT(VARCHAR, 1234.56, 1) AS FormattedString;
+     -- Result: '1,234.56'
+     ```
+
+6. **CEIL() / FLOOR()**
+   - **Description**: Rounds a number up (`CEIL`) or down (`FLOOR`) to the nearest integer.
+   - **Syntax**:
+     ```sql
+     CEIL(number)
+     FLOOR(number)
+     ```
+   - **Example**:
+     ```sql
+     SELECT CEIL(123.456) AS CeilNumber, FLOOR(123.456) AS FloorNumber;
+     -- Result: 124 (Ceil), 123 (Floor)
+     ```
+
+7. **LPAD() / RPAD()**
+   - **Description**: Pads a number with leading or trailing characters to achieve a fixed length.
+   - **Syntax**:
+     ```sql
+     LPAD(string, length, pad_string)
+     RPAD(string, length, pad_string)
+     ```
+   - **Example**:
+     ```sql
+     SELECT LPAD('123', 5, '0') AS PaddedNumber;
+     -- Result: '00123'
+     ```
+
+8. **TO_CHAR()**
+   - **Description**: Converts a number to a formatted string (commonly used in Oracle).
+   - **Syntax**:
+     ```sql
+     TO_CHAR(number, format)
+     ```
+   - **Example**:
+     ```sql
+     SELECT TO_CHAR(12345.67, '999,999.99') AS FormattedNumber;
+     -- Result: ' 12,345.67'
+     ```
+
+### 9. **NUMERIC Data Type Conversion**
+   - **Description**: Converts numbers to specific numeric types like `DECIMAL` or `FLOAT` for precision control.
+   - **Syntax**:
+     ```sql
+     CAST(number AS DECIMAL(p, s))
+     ```
+   - **Example**:
+     ```sql
+     SELECT CAST(123.456 AS DECIMAL(5, 2)) AS FormattedNumber;
+     -- Result: 123.46
+     ```
+
+## String functions
+
+* **LENGTH** -> Used to count how many characters a string has.
+* **TRIM** -> Most basic syntax is `TRIM(string, [character to be trimmed]`. It'll remove white spaces by default. 
+* **INSTR** -> Tells you the position of a certain text snipped within a string. 
+* **REPLACE** -> Syntax is REPLACE(string, current_substring, new_substring). So if you want to replace all 'Hi' texts in a column for 'Hello', this is how you'd do it.
+* **SUBSTR (or SUBSTRING)** -> Extracts a part of the string based on initial point (where the string starts) and a number of characters.
+
+
+## Date functions
+* **STRFTIME** -> Ir formats date. Syntax STRFTIME(format, timestring, modifier1, modifier2, ...). In summary:
+    * %Y returns the year (YYYY)
+    * %m returns the month (01-12)
+    * %d returns the day of month (01-31)
+    * %H returns the hour (00-23)
+    * %M returns the minute (00-59)
+    * %S returns the second (00-59)
+* **CURRENT_TIMESTAMP**
+* **DATETIME**
+* **TIME**
+* **DATE**
+
+## The CASE function
+Reference: [W3 Schools](https://www.w3schools.com/sql/sql_case.asp).
+
+The CASE function works similarly to `IF / THEN / ELSE` in Python. It's used to add some logic to your code. The syntax is somewhat like this:
+
+```sql
+CASE
+    WHEN condition1 THEN result1
+    WHEN condition2 THEN result2
+    WHEN conditionN THEN resultN
+    ELSE result
+END;
+```
+
+Examples: 
+
+```sql
+--Example from W3 Schools.
+SELECT OrderID, Quantity,
+CASE
+    WHEN Quantity > 30 THEN 'The quantity is greater than 30'
+    WHEN Quantity = 30 THEN 'The quantity is 30'
+    ELSE 'The quantity is under 30'
+END AS QuantityText
+FROM OrderDetails;
+```
+Here, we are creating a new column called "QuantityText" that will be populated following the conditions we specified inside the CASE function. 
+
+```sql
+```
