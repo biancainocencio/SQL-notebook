@@ -114,7 +114,8 @@ CREATE TABLE orders (
 Now, if a client is deleted from `clients`, all orders placed by that client will also be deleted from `orders`.
 
 # Filtering Data
-## `WHERE`
+## Basics
+### `WHERE`
 `WHERE` is used to filter the results queried by establishing limitations. In the example below, we're pulling out only clients whose name is Jorge Amado (who is, by the way, a brilliant Brazilian author about whom you can learn more on the [Britannica website](https://www.britannica.com/biography/Jorge-Amado)).  
 
 ```sql
@@ -123,7 +124,7 @@ WHERE name = 'Jorge Amado';
 ```
 However, it might be the case that we have multiple lines with a client named Jorge Amado. If you want to see, for example, which customers have bought from your store, you might end up with multiple client lines repeated. In this scenario, we can use the command `DISTINCT` to make our job easier.
 
-## `DISTINCT`
+### `DISTINCT`
 With `DISTINCT` you'll query unique records. If you don't want repeated customers in your table, you can select distinct records. Example:
 
 ```sql
@@ -131,6 +132,23 @@ SELECT DISTINCT client_ID
 FROM clients; 
 ```
 Where `clients` is the name of the table where we are pulling the IDs from. 
+
+### `IS NULL`/`NOT NULL`
+If you want to limit your results to exclude empty lines or get only records for which a certain field is empty, you can use the syntax `IS NULL` or `NOT NULL` together with `WHERE`:
+
+```sql
+SELECT employee_id, employee_name, employee_salary
+FROM employees
+WHERE termination_date IS NULL
+AND country = "USA"
+ORDER BY employee_salary DESC
+LIMIT 5
+; 
+```
+
+In the query above, we are selecting a few columns from our `employees` table, filtering out all employees that have a termination date (meaning they don't work at the company anymore). In summary, we are pulling from our table the Top 5 most well-paid current employees in the United States.
+
+## Nested filters
 
 
 # Creating and manipulating tables
@@ -233,3 +251,23 @@ Example: you want to delete the contact information of all suppliers from the Un
 DELETE FROM suppliers_table
 WHERE supplier_country = 'USA';
 ```
+
+# Functions
+## Aggregating functions
+There are multiple specific functions / SQL commands that are specifically focused on numbers. If you're familiar with Excel, first I'm sorry!, second there will be no surprises here. 
+
+* **MAX** -> Highest value in a column.
+* **MIN** -> Lowest value in a column.
+
+The syntax for these commands is usually `FUNCTION(column_name)`, e.g `SELECT month, MAX(sales) FROM sales` will return the highest amount of sales and in which month that happened.
+
+* **SUM** -> Sums the values of a certain column.
+
+```sql
+SELECT
+ SUM(total_revenue) AS 'Total sales'
+FROM sales
+WHERE year LIKE '199%';
+```
+
+Here, I'm retrieving all sales that happened in the 90s and summing it all.
