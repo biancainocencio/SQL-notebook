@@ -12,12 +12,16 @@ If you are looking for the very basics on how to work with SQL, e.g. what a `SEL
 2. [Data types & constraints](#data-types--constraints)
 3. [Filtering data](#filtering-data)
 4. [Creating & manipulating tables](#creating-and-manipulating-tables)
-5. Functions
-6. Complex queries
+5. [Functions](#functions)
+6. [Complex queries](#complex-queries)
+7. [Data good practices & further tools](#data-good-practices--further-tools)
 
 # Cool resources
 
-SQL Murder Mistery > https://mystery.knightlab.com/walkthrough.html
+* [SQL Murder Mistery](https://mystery.knightlab.com/walkthrough.html) 
+    * A "whodunnit" type of murder mystery role-playing where you are the investigator. Using SQL, you go over the data available on the case and try to solve who committed the crime! Super fun way of practicing.
+* [SQL Bolt](https://sqlbolt.com/)
+   * SQL Bolt is more appropriate for beginners, but even if you have a good basis on SQL it's still a fun and interactive way of brushing up on some core skills.
 
 # Data types & constraints
 ## Data types
