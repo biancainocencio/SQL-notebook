@@ -12,6 +12,8 @@ If you are looking for the very basics on how to work with SQL, e.g. what a `SEL
 2. [Data types & constraints](#data-types--constraints)
 3. [Filtering data](#filtering-data)
 4. [Creating & manipulating tables](#creating-and-manipulating-tables)
+5. Functions
+6. Complex queries
 
 # Cool resources
 
@@ -153,9 +155,6 @@ LIMIT 5
 
 In the query above, we are selecting a few columns from our `employees` table, filtering out all employees that have a termination date (meaning they don't work at the company anymore). In summary, we are pulling from our table the Top 5 most well-paid current employees in the United States.
 
-## Nested filters
-
-
 # Creating and manipulating tables
 ## Create a table
 When you're creating a new table, you must specify a few things:
@@ -238,6 +237,38 @@ JOIN inventory ON sales.ID_product = inventory.ID_product;
 ```
 
 This command either inserts a new row into the inventory table if a row with the same ID_product does not already exist or replaces the existing row (based on the primary key or unique constraint on ID_product) with the new data. Then, the SELECT statement computes the new quantity for each product by subtracting the sold quantity (sales.qty) from the current inventory quantity (inventory.qty), generating a list of product IDs and their updated quantities.
+
+## UNION
+**`UNION`** is a command used to unify data from different tables. If you have the same columns in two tables, but each with different records, you can unify the data using this command. 
+
+> _**Important**: `UNION` by default deletes duplicates. So, if you have repeated records they will not be shown!_
+If you need repeated records to be shown in the unified table, you can use `UNION ALL`.
+
+## JOIN
+_Important note:_ Not any material on SQL would be complete without a section on the `JOIN` commands, so I'm creating this section. However, for me the best way to understand this concept when I was getting started with SQL was through [Jeff Atwood's post on the Coding Horror blog](https://blog.codinghorror.com/a-visual-explanation-of-sql-joins/). He uses Venn Diagrams to explain the simplest use cases of `JOIN`, and the post contains some great comments from other readers developing the theory even further. I suggest you take a look! In my notebook, I'm not covering the basic syntax and logic of the `JOIN`, just taking notes on a few use cases. 
+
+**RIGHT JOIN + SUB-QUERY**
+```sql
+
+--We're selecting the tables 'products' and 'orderedproducts', which contain product catalogue information and data on how many times each product was ordered. We're calling them 'op' and 'pr' for short.
+
+SELECT
+ pr.product_name,
+ x.order_id,
+ x.product_id
+FROM (
+ SELECT
+   orders.id_order,
+   orders.id_product
+ FROM orders
+ INNER JOIN orderedproducts op --Combining data from all historical orders and the orders history of specific products.  
+ ON op.order_id = orders.id_order 
+ WHERE strftime('%m', orders.date_time_order > '05') --Filter: only orders placed in June or later.
+ ) x -- Output: returns the id_order and id_product for matching rows and stores this result as a derived table (alias x).
+products pr
+RIGHT JOIN orderedproducts op
+ON pr.id = x.product_id
+```
 
 ## Commands UPDATE and DELETE
 This command can be used to alter the data or column names in the tables. 
@@ -458,3 +489,117 @@ Here, we are creating a new column called "QuantityText" that will be populated 
 
 ```sql
 ```
+
+# Complex queries
+## Sub-queries
+Sub-queries are essentially nested functions. See the example below:
+
+```sql
+SELECT name, telephone
+FROM clients
+WHERE client_id IN (
+ SELECT DISTINCT id_client
+ FROM orderhistory
+ WHERE order_date <= '2024-02-01');
+```
+
+Here, we are selecting the name and telephone of all clients that placed an order before or on the 2nd of January. We use `IN` in this case, as the subquery (the code in parenthesis) might return more than one ID, and we use `SELECT DISTINCT` to make sure no repeated client IDs are returned. 
+
+**Sub-queries using `HAVING`:** As said above, `HAVING` is equivalent to `WHERE`, but used when we apply aggregate functions. Example: We want to select all products whose prices are above our products' average price. 
+
+First, I work on the subquery. In this case, that'll be the average price:
+
+```sql
+--Sub-query.
+SELECT AVG(price)
+FROM products
+```
+
+Then, I like to build the rest of the query from there. 
+
+```sql
+--Query + sub-query embedded.
+SELECT
+ product_id,
+ product_price,
+ product_name
+FROM products
+HAVING price > (
+ SELECT AVG(price)
+ FROM products);
+```
+So, whatever average price our subquery (the first one) returns will be used to filter our the products. 
+
+# Data good practices & further tools
+
+## TRIGGER
+The `TRIGGER` command is SQL is a sort of custom function that you can create. Triggers are useful in scenarios like:
+
+* Automatically logging changes to a table.
+* Enforcing constraints that cannot be implemented with standard constraints.
+* Validating data before an INSERT, UPDATE, or DELETE operation.
+* Synchronizing related tables.
+
+### Syntax for Creating a Trigger
+
+```sql
+Copy code
+CREATE TRIGGER trigger_name
+{BEFORE | AFTER | INSTEAD OF} {INSERT | UPDATE | DELETE}
+ON table_name
+[FOR EACH ROW]
+BEGIN
+   -- Trigger logic (SQL statements) goes here
+END;
+```
+
+### Example using a trigger
+
+**Scenario** 
+Suppose you have a table `employees` and you want to maintain a log of any updates to employee salaries in a `salary_log` table.
+
+---
+#### Table Definitions
+
+* **`employees` Table:**
+```sql
+CREATE TABLE employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    salary DECIMAL(10, 2)
+);
+
+* **`salary_log` Table:**
+```sql
+CREATE TABLE salary_log (
+    log_id INT PRIMARY KEY AUTOINCREMENT,
+    employee_id INT,
+    old_salary DECIMAL(10, 2),
+    new_salary DECIMAL(10, 2),
+    change_date DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+---
+**Trigger Definition**
+Create a trigger that logs changes to the employees salary column whenever it is updated:
+
+```sql
+Copy code
+CREATE TRIGGER log_salary_changes
+AFTER UPDATE OF salary ON employees
+FOR EACH ROW
+BEGIN
+    INSERT INTO salary_log (employee_id, old_salary, new_salary)
+    VALUES (OLD.id, OLD.salary, NEW.salary);
+END;
+```
+---
+**Explanation of the Trigger**
+* Trigger Name: log_salary_changes.
+* Event Type: AFTER UPDATE OF salary.
+    * The trigger fires after an UPDATE operation on the salary column in the employees table.
+* Affected Rows: FOR EACH ROW.
+   * Executes the trigger logic for each row affected by the UPDATE operation.
+* Logic:
+    * Inserts the id of the employee, the old salary (OLD.salary), and the new salary (NEW.salary) into the salary_log table.
+ 
